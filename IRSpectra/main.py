@@ -11,12 +11,10 @@ from openpyxl.chart import ScatterChart, Reference, Series
 from openpyxl.chart.label import DataLabel, DataLabelList
 import matplotlib.pyplot as plt
 from timeit import default_timer as timer
-from cclib.parser import ccopen
 from openpyxl.drawing.text import Paragraph, ParagraphProperties, CharacterProperties
 from openpyxl.chart.text import RichText
 
 import math
-import os
 
 
 # make sure to use:
@@ -24,13 +22,13 @@ import os
 # before running the first time
 
 INPUT_FILES = {  # dictionary containing molecule names and where the input file is located
-    "isoquinoline1":"/home/aiden/Documents/jcamp/CarneySum/test/1-butylnaptho[2-3-g]isoquinoline.log"
+    "isoquinoline1":"../test/1-butylnaptho[2-3-g]isoquinoline.log"
 }
 
 OUTPUT_EXCEL_FILE = "test.xlsx"
 
 # GaussSum Parameters
-START = 0
+START = 8   # note: endpoints are included so step may not be intuitive to calculate
 END = 4000
 NUM_PTS = 500
 FWHM = 10
@@ -62,8 +60,8 @@ COALESCE_WINDOW = 9  # coalesce
 HIGH_PASS = 9
 
 # this parameter must be a reasonable value in order for the assumption that
-# the wavelength series is evenly spaced to be approximatley true because the
-# peak finding algorithm and most peak finding algorithms in general require
+# the wavelength series is evenly spaced to be approximately true because the
+# peak finding algorithm used and most peak finding algorithms in general require
 # this
 WAV_X_MAX = 25
 WAV_X_MIN = 2.5
@@ -236,6 +234,7 @@ for moleculeName, inputFile in INPUT_FILES.items():
                 modeIR.append(float(data[6]))
                 scalingFactors.append(float(data[7]))
                 unscaledFreq.append(float(data[8]))
+
 
     moleculeData.update({
         moleculeName:{

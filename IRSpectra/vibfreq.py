@@ -11,56 +11,33 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 
-import os
-import math
 import numpy
 from cclib.parser import ccopen
 
 
-class Spectrum(object):
-    """Convolutes and stores spectrum data.
-
-    Usage:
-     Spectrum(start,end,numpts,peaks,width,formula)
-
-    where
-     peaks is [(pos,height),...]
-     formula is a function such as gaussianpeak or delta
-    
-
-    >>> t = Spectrum(0,50,11,[[(10,1),(30,0.9),(35,1)]],5,delta)
-    >>> t.spectrum
-    array([[ 0.        ],
-           [ 1.        ],
-           [ 1.        ],
-           [ 1.        ],
-           [ 0.        ],
-           [ 0.89999998],
-           [ 1.89999998],
-           [ 1.89999998],
-           [ 1.        ],
-           [ 0.        ],
-           [ 0.        ]],'d')
+def broadenSpectrum(start, end, numpts, peaks, width, formula):
     """
-    def __init__(self,start,end,numpts,peaks,width,formula):
-        self.start = start
-        self.end = end
-        self.numpts = numpts
-        self.peaks = peaks
-        self.width = width
-        self.formula = formula
+    Broadens spectrum data. Creates a distribution function around
+    each peak (pos, height) and adds up the contributions from each 
+    distribution over numpts from start to end to create a spectrum
+    that looks closer to one obtained by experiment
 
-        # len(peaks) is the number of spectra in this object
-        self.spectrum = numpy.zeros( (numpts,len(peaks)),"d")
-        self.xvalues = numpy.arange(numpts)*float(end-start)/(numpts-1) + start
-        for i in range(numpts):
-            x = self.xvalues[i]
-            for spectrumno in range(len(peaks)):
-                for (pos,height) in peaks[spectrumno]:
-                    self.spectrum[i,spectrumno] = self.spectrum[i,spectrumno] + formula(x,pos,height,width)
+    
+    formula is a function such as gaussianpeak or delta
+    """
+    spectrum = numpy.zeros(numpts,"d")
+    xvalues = numpy.linspace(start, end, numpts)
+    print(xvalues, start)
+    for i in range(numpts):
+        x = xvalues[i]
+        for pos, height in peaks:
+            spectrum[i] = spectrum[i] + formula(x, pos, height, width)
+
+    return xvalues, spectrum
 
 
-def lorentzian(x,peak,height,width):
+
+def lorentzian(x, peak, height, width):
     """The lorentzian curve.
 
     f(x) = a/(1+a)
@@ -86,8 +63,8 @@ def irSpectra(inputFileName, outputFileName, start, end, numpts, FWHM, scaleFunc
         freq[i] *= scalingFactor
         scale.append(scalingFactor)
     
-    print("Convolving spectrum")
-    spectrum = Spectrum(start,end,numpts, [list(zip(freq, act))], FWHM, lorentzian)
+    print("Broadening spectrum")
+    xvalues, spectrum = broadenSpectrum(start, end, numpts, list(zip(freq, act)), FWHM, lorentzian)
     
     print("Writing scaled spectrum to", outputFileName) 
     with open(outputFileName, "w") as outputFile:
@@ -95,16 +72,15 @@ def irSpectra(inputFileName, outputFileName, start, end, numpts, FWHM, scaleFunc
         outputFile.write("Freq (cm-1)\tIR act\t\tMode\tLabel\tFreq (cm-1)\tIR act\t")
         outputFile.write("Scaling factors\tUnscaled freq\n")
         
-        width = end - start
-        for x in range(numpts):
-            if spectrum.spectrum[x,0]<1e-20:
-                spectrum.spectrum[x,0] = 0.
-            realx = width * (x + 1) / numpts + start
-            outputFile.write(str(realx) + "\t" + str(spectrum.spectrum[x,0]))
+        for i in range(numpts):
+            if spectrum[i] < 1e-20:
+                spectrum[i] = 0.
 
-            if x < len(freq): # Write the activities (assumes more pts to plot than freqs - fix this)
-                outputFile.write("\t\t"+str(x+1)+"\t"+vibsyms[x]+"\t"+str(freq[x])+"\t"+str(act[x]))
-                outputFile.write("\t"+str(scale[x])+"\t" + str(unscaledFreq[x]))
+            outputFile.write(str(xvalues[i]) + "\t" + str(spectrum[i]))
+
+            if i < len(freq): # Write the activities (assumes more pts to plot than freqs - fix this)
+                outputFile.write("\t\t"+str(i+1)+"\t"+vibsyms[i]+"\t"+str(freq[i])+"\t"+str(act[i]))
+                outputFile.write("\t"+str(scale[i])+"\t" + str(unscaledFreq[i]))
                 
             outputFile.write("\n")
             
