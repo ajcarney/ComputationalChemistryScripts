@@ -28,7 +28,7 @@ INPUT_FILES = {  # dictionary containing molecule names and where the input file
 OUTPUT_EXCEL_FILE = "test.xlsx"
 
 # GaussSum Parameters
-START = 8   # note: endpoints are included so step may not be intuitive to calculate
+START = 8   # note: endpoints are included so step may not be intuitive to calculate: step = (end - start) / (npoints - 1)
 END = 4000
 NUM_PTS = 500
 FWHM = 10
