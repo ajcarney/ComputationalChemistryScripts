@@ -5,7 +5,7 @@ Created on Wed Jun 28 17:54:34 2023
 
 @author: aiden
 """
-import ir_spectra
+import raman_spectra
 from openpyxl import Workbook
 from openpyxl.chart import ScatterChart, Reference, Series
 from openpyxl.chart.label import DataLabel, DataLabelList
@@ -42,7 +42,7 @@ def SCALE_FUNCTION(freq):
     return scalingFactor
     
 EXCITATION = 785
-TEMP = 293.15
+TEMPERATURE = 293.15
 
 
 # Excel Parameters
@@ -106,7 +106,7 @@ workingDir = "./"
 
 for moleculeName, inputFile in INPUT_FILES.items():
     outputFile = workingDir + moleculeName + ".out"
-    ir_spectra.irSpectra(inputFile, outputFile, START, END, NUM_PTS, FWHM, SCALE_FUNCTION)
+    raman_spectra.ramanSpectra(inputFile, outputFile, START, END, NUM_PTS, FWHM, SCALE_FUNCTION, EXCITATION, TEMPERATURE)
 
 
 ###############################################################################

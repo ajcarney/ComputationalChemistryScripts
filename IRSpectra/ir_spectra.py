@@ -27,7 +27,6 @@ def broadenSpectrum(start, end, numpts, peaks, width, formula):
     """
     spectrum = numpy.zeros(numpts,"d")
     xvalues = numpy.linspace(start, end, numpts)
-    print(xvalues, start)
     for i in range(numpts):
         x = xvalues[i]
         for pos, height in peaks:
